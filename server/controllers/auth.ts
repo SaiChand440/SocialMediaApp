@@ -46,17 +46,18 @@ export const register = async (req: Request,res: Response) => {
 export const login = async (req: Request, res: Response) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({email : email});
+        const user = await User.findOne({email : email}).lean();
         if (!user) {
             return res.status(400).json({msg: "User Not Found"})
         }
-        const isMatch = bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({msg: "Invalid Password"})
-        }
-        const token = jwt.sign({id: user._id},process.env.JWT_SECRET);
-        delete user.password;
-        res.status(201).json({token, user});
+        const isMatch = bcrypt.compare(password, user.password).then(isMatching => {
+            if (!isMatching) {
+                return res.status(400).json({msg: "Invalid Password"})
+            }
+            const token = jwt.sign({id: user._id},process.env.JWT_SECRET);
+            delete user.password;
+            res.status(201).json({token, user});
+        })
     } catch (error: any) {
         res.status(500).json({error : error.message});
     }

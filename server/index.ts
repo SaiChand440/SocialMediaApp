@@ -10,6 +10,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { register } from './controllers/auth';
 import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
 
 /* CONFIGURATIONS */
 const __filename = fileURLToPath(import.meta.url);
@@ -41,6 +42,7 @@ app.post('/auth/register',upload.single("picture"),register);
 
 /* ROUTES */
 app.use("/auth", authRoutes);
+app.use("/users",userRoutes);
 
 /* MONGOOSE SETUP */
 const port = process.env.PORT || 6000;
@@ -48,3 +50,5 @@ const port = process.env.PORT || 6000;
 process.env.MONGO_URL !== undefined ? mongoose.connect(process.env.MONGO_URL).then(() => {
     app.listen(port, () => console.log(`you are listening on ${port}`))
 }).catch(e => console.log(e)) : console.log("wrong setup");
+
+mongoose.set('strictQuery', true);
