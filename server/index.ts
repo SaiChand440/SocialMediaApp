@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import mongoose from 'mongoose';
 import cors from 'cors';
@@ -8,6 +8,8 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { register } from './controllers/auth';
+import authRoutes from './routes/auth';
 
 /* CONFIGURATIONS */
 const __filename = fileURLToPath(import.meta.url);
@@ -18,7 +20,7 @@ app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: 'cross-origin' }));
 app.use(morgan('common'));
-app.use(bodyParser.json({ limit: '30mb', extended: true}));
+app.use(bodyParser.json({ limit: '30mb'}));
 app.use(bodyParser.urlencoded({ limit: '30mb', extended: true}));
 app.use(cors());
 app.use("/assets",express.static(path.join(__dirname, 'public/assets')));
@@ -34,8 +36,15 @@ const storage = multer.diskStorage({
 })
 const upload = multer({ storage });
 
+/* ROUTES WITH FILES */
+app.post('/auth/register',upload.single("picture"),register);
+
+/* ROUTES */
+app.use("/auth", authRoutes);
+
 /* MONGOOSE SETUP */
 const port = process.env.PORT || 6000;
-mongoose.connect(process.env.MONGO_URL).then(() => {
+
+process.env.MONGO_URL !== undefined ? mongoose.connect(process.env.MONGO_URL).then(() => {
     app.listen(port, () => console.log(`you are listening on ${port}`))
-}).catch(e => console.log(e));
+}).catch(e => console.log(e)) : console.log("wrong setup");
