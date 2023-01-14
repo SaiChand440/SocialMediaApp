@@ -1,4 +1,4 @@
-#Social Media App Setup
+# Social Media App
 
 ## Tech Stack
 - Node.js
